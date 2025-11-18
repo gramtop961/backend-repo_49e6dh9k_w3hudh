@@ -1,13 +1,9 @@
 INFO:     Will watch for changes in these directories: ['/home/workspace']
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-INFO:     Started reloader process [342] using WatchFiles
-INFO:     Started server process [344]
+INFO:     Started reloader process [385] using WatchFiles
+INFO:     Started server process [387]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
-INFO:     172.20.0.1:44142 - "GET /products HTTP/1.1" 200 OK
-INFO:     172.20.0.1:44142 - "GET /products HTTP/1.1" 200 OK
-INFO:     172.20.0.1:44144 - "GET /products HTTP/1.1" 200 OK
-INFO:     172.20.0.1:44144 - "GET /products HTTP/1.1" 200 OK
-INFO:     172.20.0.1:44156 - "HEAD / HTTP/1.1" 404 Not Found
-INFO:     172.20.0.1:52552 - "GET /products HTTP/1.1" 200 OK
-INFO:     172.20.0.1:52552 - "GET /products HTTP/1.1" 200 OK
+INFO:     172.20.0.1:39880 - "GET /products HTTP/1.1" 200 OK
+INFO:     172.20.0.1:39880 - "GET /products HTTP/1.1" 200 OK
+INFO:     172.20.0.1:39884 - "HEAD / HTTP/1.1" 404 Not Found
