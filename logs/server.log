@@ -1,13 +1,21 @@
 INFO:     Will watch for changes in these directories: ['/home/workspace']
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-INFO:     Started reloader process [152] using WatchFiles
-INFO:     Started server process [154]
+INFO:     Started reloader process [225] using WatchFiles
+INFO:     Started server process [227]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
-INFO:     172.20.0.1:59004 - "GET /products HTTP/1.1" 200 OK
-INFO:     172.20.0.1:59004 - "GET /products HTTP/1.1" 200 OK
-INFO:     172.20.0.1:59016 - "GET /products HTTP/1.1" 200 OK
-INFO:     172.20.0.1:59016 - "GET /products HTTP/1.1" 200 OK
-INFO:     172.20.0.1:59024 - "HEAD / HTTP/1.1" 404 Not Found
-INFO:     172.20.0.1:49454 - "GET /products HTTP/1.1" 200 OK
-INFO:     172.20.0.1:49454 - "GET /products HTTP/1.1" 200 OK
+INFO:     172.20.0.1:48022 - "GET /products HTTP/1.1" 200 OK
+INFO:     172.20.0.1:48022 - "GET /products HTTP/1.1" 200 OK
+INFO:     172.20.0.1:48028 - "GET /products HTTP/1.1" 200 OK
+INFO:     172.20.0.1:48028 - "GET /products HTTP/1.1" 200 OK
+INFO:     172.20.0.1:48042 - "HEAD / HTTP/1.1" 404 Not Found
+INFO:     172.20.0.1:59386 - "GET /products HTTP/1.1" 200 OK
+INFO:     172.20.0.1:59386 - "GET /products HTTP/1.1" 200 OK
+INFO:     172.20.0.1:59390 - "GET /products HTTP/1.1" 200 OK
+INFO:     172.20.0.1:59390 - "GET /products HTTP/1.1" 200 OK
+INFO:     172.20.0.1:59390 - "GET /products HTTP/1.1" 200 OK
+INFO:     172.20.0.1:59390 - "GET /products HTTP/1.1" 200 OK
+INFO:     172.20.0.1:53306 - "GET /products HTTP/1.1" 200 OK
+INFO:     172.20.0.1:53306 - "GET /products HTTP/1.1" 200 OK
+INFO:     172.20.0.1:60716 - "GET /products HTTP/1.1" 200 OK
+INFO:     172.20.0.1:60716 - "GET /products HTTP/1.1" 200 OK

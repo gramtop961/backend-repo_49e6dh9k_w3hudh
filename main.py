@@ -197,6 +197,27 @@ def create_product(product: Product):
     return product
 
 
+@app.put("/products/{product_id}", response_model=Product)
+def update_product(product_id: str, product: Product):
+    for idx, p in enumerate(DB["products"]):
+        if p.id == product_id or p.slug == product_id:
+            # preserve id/created_at
+            product.id = p.id
+            product.created_at = p.created_at
+            DB["products"][idx] = product
+            return product
+    raise HTTPException(status_code=404, detail="Product not found")
+
+
+@app.delete("/products/{product_id}")
+def delete_product(product_id: str):
+    for idx, p in enumerate(DB["products"]):
+        if p.id == product_id or p.slug == product_id:
+            del DB["products"][idx]
+            return {"ok": True}
+    raise HTTPException(status_code=404, detail="Product not found")
+
+
 @app.post("/orders", response_model=Order)
 def create_order(order: Order):
     order.id = str(uuid.uuid4())
@@ -204,6 +225,16 @@ def create_order(order: Order):
     order.created_at = datetime.utcnow()
     DB["orders"][order.id] = order.model_dump()
     return order
+
+
+@app.get("/orders", response_model=List[Order])
+def list_orders(status: Optional[str] = None, limit: int = 50, offset: int = 0):
+    orders = list(DB["orders"].values())
+    if status:
+        orders = [o for o in orders if o.get("status") == status]
+    # sort newest first by created_at
+    orders.sort(key=lambda o: o.get("created_at", datetime.min), reverse=True)
+    return orders[offset: offset + limit]
 
 
 @app.get("/orders/{order_id}", response_model=Order)
