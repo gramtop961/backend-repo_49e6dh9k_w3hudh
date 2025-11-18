@@ -1,9 +1,11 @@
-from fastapi import FastAPI, HTTPException, Depends, Query, Body
+from fastapi import FastAPI, HTTPException, Depends, Query, Body, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr, Field
 from typing import List, Optional, Literal, Dict, Any
 from datetime import datetime
 import uuid
+import os
+import stripe
 
 # In-memory store for demo (replace with MongoDB in production)
 DB: Dict[str, Any] = {
@@ -260,6 +262,105 @@ def get_settings():
 def update_settings(settings: Settings):
     DB["settings"] = settings.model_dump()
     return DB["settings"]
+
+
+# Payments: Stripe Checkout (test-mode)
+class CheckoutRequest(BaseModel):
+    line_items: List[LineItem]
+    totals: Dict[str, float]
+    shipping_address: Address
+    billing_address: Address
+    locale: Optional[str] = None
+    success_url: Optional[str] = None
+    cancel_url: Optional[str] = None
+
+
+@app.post("/payments/stripe/checkout")
+def create_stripe_checkout(payload: CheckoutRequest):
+    # Create a pending order first
+    order = Order(
+        line_items=payload.line_items,
+        totals=payload.totals,
+        shipping_address=payload.shipping_address,
+        billing_address=payload.billing_address,
+        payment_info={"method": "stripe", "status": "pending"},
+    )
+    created = create_order(order)  # reuse existing creator
+
+    # Configure Stripe
+    secret = DB["settings"]["payment"].get("stripe_secret") or os.getenv("STRIPE_SECRET", "")
+    if not secret:
+        raise HTTPException(status_code=400, detail="Stripe not configured")
+    stripe.api_key = secret
+
+    # Build Stripe line items (amount in öre)
+    stripe_items = []
+    for li in payload.line_items:
+        # Try to fetch product title for display
+        title = li.sku or li.product_id
+        for p in DB["products"]:
+            if p.id == li.product_id or p.SKU == li.sku:
+                title = p.title
+                break
+        stripe_items.append({
+            "price_data": {
+                "currency": "sek",
+                "product_data": {"name": title},
+                "unit_amount": int(round(li.price * 100)),
+            },
+            "quantity": li.qty,
+        })
+
+    success_url = payload.success_url or "https://example.com/checkout/success"
+    cancel_url = payload.cancel_url or "https://example.com/checkout/cancel"
+
+    session = stripe.checkout.Session.create(
+        mode="payment",
+        line_items=stripe_items,
+        success_url=f"{success_url}?order_id={created.id}",
+        cancel_url=cancel_url,
+        metadata={"order_id": created.id},
+        locale=(payload.locale or "sv"),
+    )
+
+    # Attach session id to order
+    DB["orders"][created.id]["payment_info"].update({
+        "stripe_session_id": session.id
+    })
+
+    return {"url": session.url, "order_id": created.id}
+
+
+@app.post("/webhooks/stripe")
+async def stripe_webhook(request: Request):
+    payload = await request.body()
+    sig = request.headers.get("stripe-signature")
+    endpoint_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+
+    if not endpoint_secret:
+        # If no secret configured, skip verification for demo
+        try:
+            event = stripe.Event.construct_from(request.json(), stripe.api_key)
+        except Exception:
+            # Fallback parse
+            event = None
+    else:
+        try:
+            event = stripe.Webhook.construct_event(
+                payload=payload, sig_header=sig, secret=endpoint_secret
+            )
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e))
+
+    if event and event.get("type") == "checkout.session.completed":
+        session = event["data"]["object"]
+        order_id = session.get("metadata", {}).get("order_id")
+        if order_id and order_id in DB["orders"]:
+            DB["orders"][order_id]["status"] = "paid"
+            DB["orders"][order_id]["payment_info"]["status"] = "paid"
+            DB["orders"][order_id]["payment_info"]["stripe_session_id"] = session.get("id")
+
+    return {"received": True}
 
 
 # Seed demo products
